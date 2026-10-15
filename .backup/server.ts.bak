@@ -1,0 +1,687 @@
+import express from 'express';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { MOVIE_CATALOG } from './src/data/movieCatalog.ts';
+import { WatchRoom, Participant, PlaylistItem, Poll, ChatMessage } from './src/types/watchParty.ts';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const httpServer = createServer(app);
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+app.use(express.json());
+
+// In-memory Room State Store
+const rooms = new Map<string, WatchRoom>();
+
+// Seed a default demo room so visitors can instantly join
+const demoRoomId = 'CINEMA-1';
+rooms.set(demoRoomId, {
+  id: demoRoomId,
+  title: 'Friday Indie & Sci-Fi Premiere',
+  hostId: 'host-alice',
+  playbackControl: 'all',
+  playback: {
+    media: MOVIE_CATALOG[0], // Cosmos Laundromat
+    status: 'paused',
+    position: 0,
+    playbackRate: 1.0,
+    updatedAt: Date.now(),
+    sequenceNumber: 1
+  },
+  participants: [
+    {
+      id: 'host-alice',
+      name: 'Alice (Host)',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alice',
+      isHost: true,
+      joinedAt: Date.now() - 600000,
+      latencyMs: 18,
+      online: true
+    },
+    {
+      id: 'bot-marco',
+      name: 'Marco',
+      avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Marco',
+      isHost: false,
+      joinedAt: Date.now() - 300000,
+      latencyMs: 25,
+      online: true
+    }
+  ],
+  playlist: [
+    {
+      id: 'item-1',
+      media: MOVIE_CATALOG[0],
+      addedBy: { id: 'host-alice', name: 'Alice (Host)' },
+      addedAt: Date.now() - 600000,
+      status: 'approved'
+    },
+    {
+      id: 'item-2',
+      media: MOVIE_CATALOG[1],
+      addedBy: { id: 'bot-marco', name: 'Marco' },
+      addedAt: Date.now() - 400000,
+      status: 'approved'
+    },
+    {
+      id: 'item-3',
+      media: MOVIE_CATALOG[2],
+      addedBy: { id: 'bot-marco', name: 'Marco' },
+      addedAt: Date.now() - 200000,
+      status: 'approved'
+    }
+  ],
+  chat: [
+    {
+      id: 'msg-1',
+      userId: 'system',
+      userName: 'GreenRoom',
+      userAvatar: '',
+      text: 'Welcome to Friday Indie & Sci-Fi Premiere! Grab your popcorn.',
+      timestamp: Date.now() - 600000,
+      isSystem: true
+    },
+    {
+      id: 'msg-2',
+      userId: 'host-alice',
+      userName: 'Alice (Host)',
+      userAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alice',
+      text: 'Hey everyone! Cosmos Laundromat is queued up. Let me know when ready!',
+      timestamp: Date.now() - 500000
+    },
+    {
+      id: 'msg-3',
+      userId: 'bot-marco',
+      userName: 'Marco',
+      userAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Marco',
+      text: 'Audio & sync look crystal clear on my end! 🔥',
+      timestamp: Date.now() - 250000
+    }
+  ],
+  polls: [
+    {
+      id: 'poll-1',
+      question: 'Which movie should we stream right after Cosmos Laundromat?',
+      options: [
+        { id: 'opt-1', text: 'Big Buck Bunny: Forest Awakening', votes: ['host-alice'] },
+        { id: 'opt-2', text: 'Sintel: The Dragon Quest', votes: ['bot-marco'] },
+        { id: 'opt-3', text: 'Tears of Steel: Neon Vanguard', votes: [] }
+      ],
+      createdBy: 'host-alice',
+      createdByName: 'Alice (Host)',
+      createdAt: Date.now() - 350000,
+      isActive: true
+    }
+  ],
+  createdAt: Date.now() - 700000
+});
+
+// Helper to compute live playback position
+function getAuthoritativePosition(room: WatchRoom): number {
+  if (room.playback.status === 'playing') {
+    const elapsed = ((Date.now() - room.playback.updatedAt) / 1000) * room.playback.playbackRate;
+    const mediaDuration = room.playback.media?.duration || 3600;
+    return Math.min(room.playback.position + elapsed, mediaDuration);
+  }
+  return room.playback.position;
+}
+
+// REST API Endpoints
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', time: Date.now(), activeRooms: rooms.size });
+});
+
+app.get('/api/movies', (req, res) => {
+  res.json(MOVIE_CATALOG);
+});
+
+app.get('/api/rooms', (req, res) => {
+  const roomSummaries = Array.from(rooms.values()).map(r => ({
+    id: r.id,
+    title: r.title,
+    participantCount: r.participants.filter(p => p.online).length,
+    currentMediaTitle: r.playback.media?.title || null,
+    hostName: r.participants.find(p => p.id === r.hostId)?.name || 'Host',
+    playbackStatus: r.playback.status
+  }));
+  res.json(roomSummaries);
+});
+
+app.post('/api/rooms', (req, res) => {
+  const { title, hostName, hostAvatar, playbackControl } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: 'Room title is required' });
+  }
+
+  // Generate unique 6-character room code
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let roomId = '';
+  for (let i = 0; i < 6; i++) {
+    roomId += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+
+  const hostId = `user-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+  const defaultMedia = MOVIE_CATALOG[0];
+
+  const newRoom: WatchRoom = {
+    id: roomId,
+    title,
+    hostId,
+    playbackControl: playbackControl === 'host-only' ? 'host-only' : 'all',
+    playback: {
+      media: defaultMedia,
+      status: 'paused',
+      position: 0,
+      playbackRate: 1.0,
+      updatedAt: Date.now(),
+      sequenceNumber: 1
+    },
+    participants: [
+      {
+        id: hostId,
+        name: hostName || 'Host',
+        avatar: hostAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${hostId}`,
+        isHost: true,
+        joinedAt: Date.now(),
+        latencyMs: 15,
+        online: true
+      }
+    ],
+    playlist: [
+      {
+        id: `pl-${Date.now()}`,
+        media: defaultMedia,
+        addedBy: { id: hostId, name: hostName || 'Host' },
+        addedAt: Date.now(),
+        status: 'approved'
+      }
+    ],
+    chat: [
+      {
+        id: `msg-${Date.now()}`,
+        userId: 'system',
+        userName: 'GreenRoom',
+        userAvatar: '',
+        text: `Room "${title}" created. Invite friends with code ${roomId}!`,
+        timestamp: Date.now(),
+        isSystem: true
+      }
+    ],
+    polls: [],
+    createdAt: Date.now()
+  };
+
+  rooms.set(roomId, newRoom);
+  res.json({ room: newRoom, hostId });
+});
+
+app.get('/api/rooms/:id', (req, res) => {
+  const room = rooms.get(req.params.id);
+  if (!room) {
+    return res.status(404).json({ error: 'Room not found' });
+  }
+  // calculate live position
+  const currentPosition = getAuthoritativePosition(room);
+  res.json({
+    ...room,
+    playback: {
+      ...room.playback,
+      position: currentPosition
+    }
+  });
+});
+
+// Socket.IO Real-Time Engine
+io.on('connection', (socket) => {
+  let currentRoomId: string | null = null;
+  let currentUserId: string | null = null;
+
+  // Latency probe
+  socket.on('ping-latency', (clientTimestamp: number, callback: (serverTime: number) => void) => {
+    if (typeof callback === 'function') {
+      callback(Date.now());
+    }
+  });
+
+  // Join Room
+  socket.on('join-room', ({ roomId, user }: { roomId: string; user: { id: string; name: string; avatar: string } }) => {
+    let room = rooms.get(roomId);
+    if (!room) {
+      socket.emit('error-message', `Room "${roomId}" not found. Verify the room code.`);
+      return;
+    }
+
+    currentRoomId = roomId;
+    currentUserId = user.id;
+    socket.join(roomId);
+
+    // Check if participant already in room
+    const existingIndex = room.participants.findIndex(p => p.id === user.id);
+    const isFirstParticipant = room.participants.filter(p => p.online).length === 0;
+
+    let isHost = false;
+    if (existingIndex >= 0) {
+      isHost = room.participants[existingIndex].isHost || isFirstParticipant;
+      room.participants[existingIndex] = {
+        ...room.participants[existingIndex],
+        name: user.name,
+        avatar: user.avatar,
+        online: true,
+        lastPing: Date.now()
+      } as Participant;
+    } else {
+      isHost = isFirstParticipant || room.hostId === user.id;
+      const newParticipant: Participant = {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+        isHost,
+        joinedAt: Date.now(),
+        latencyMs: 20,
+        online: true
+      };
+      room.participants.push(newParticipant);
+    }
+
+    if (isHost && room.hostId !== user.id) {
+      room.hostId = user.id;
+    }
+
+    // System announcement message
+    const joinMsg: ChatMessage = {
+      id: `sys-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+      userId: 'system',
+      userName: 'GreenRoom',
+      userAvatar: '',
+      text: `${user.name} joined the room`,
+      timestamp: Date.now(),
+      isSystem: true
+    };
+    room.chat.push(joinMsg);
+    if (room.chat.length > 200) room.chat.shift();
+
+    // Calculate current live playback position
+    const currentPos = getAuthoritativePosition(room);
+    const synchronizedPlayback = {
+      ...room.playback,
+      position: currentPos,
+      updatedAt: Date.now()
+    };
+    room.playback = synchronizedPlayback;
+
+    // Send complete state to the joining client
+    socket.emit('room-state', {
+      ...room,
+      playback: synchronizedPlayback
+    });
+
+    // Broadcast participant update & system message to room
+    io.to(roomId).emit('participants-updated', room.participants);
+    io.to(roomId).emit('chat-message', joinMsg);
+  });
+
+  // Playback Control Command (Play, Pause, Seek, Rate, Change Media)
+  socket.on('playback-command', (data: {
+    roomId: string;
+    action: 'play' | 'pause' | 'seek' | 'change-media' | 'rate';
+    position?: number;
+    media?: any;
+    playbackRate?: number;
+    userId: string;
+    userName: string;
+  }) => {
+    const { roomId, action, position, media, playbackRate, userId, userName } = data;
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    // Check host-only permission
+    if (room.playbackControl === 'host-only' && room.hostId !== userId) {
+      socket.emit('error-message', 'Only the room host can control playback.');
+      return;
+    }
+
+    const currentLivePos = getAuthoritativePosition(room);
+    const newPos = typeof position === 'number' ? Math.max(0, position) : currentLivePos;
+    const newStatus = action === 'play' ? 'playing' : action === 'pause' ? 'paused' : room.playback.status;
+    const newRate = typeof playbackRate === 'number' ? playbackRate : room.playback.playbackRate;
+    const newMedia = media || room.playback.media;
+
+    room.playback = {
+      media: newMedia,
+      status: newStatus,
+      position: newPos,
+      playbackRate: newRate,
+      updatedAt: Date.now(),
+      sequenceNumber: room.playback.sequenceNumber + 1
+    };
+
+    // Broadcast authoritative playback state
+    io.to(roomId).emit('playback-sync', {
+      playback: room.playback,
+      action,
+      triggeredBy: userName || 'Participant',
+      timestamp: Date.now()
+    });
+  });
+
+  // Live Chat Message
+  socket.on('chat-message', (data: { roomId: string; message: { userId: string; userName: string; userAvatar: string; text: string } }) => {
+    const { roomId, message } = data;
+    const room = rooms.get(roomId);
+    if (!room || !message.text.trim()) return;
+
+    const chatMsg: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: message.userId,
+      userName: message.userName,
+      userAvatar: message.userAvatar,
+      text: message.text.trim(),
+      timestamp: Date.now()
+    };
+
+    room.chat.push(chatMsg);
+    if (room.chat.length > 200) room.chat.shift();
+
+    io.to(roomId).emit('chat-message', chatMsg);
+  });
+
+  // Floating Emoji Reaction
+  socket.on('reaction', (data: { roomId: string; emoji: string; userId: string; userName: string }) => {
+    const { roomId, emoji, userId, userName } = data;
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const reactionPayload = {
+      id: `react-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      emoji,
+      userId,
+      userName,
+      timestamp: Date.now(),
+      xOffset: Math.floor(Math.random() * 80) + 10 // 10% to 90%
+    };
+
+    io.to(roomId).emit('reaction', reactionPayload);
+  });
+
+  // Collaborative Playlist Operations
+  socket.on('playlist-action', (data: {
+    roomId: string;
+    action: 'add' | 'remove' | 'reorder' | 'suggest' | 'approve' | 'reject';
+    item?: any;
+    itemId?: string;
+    fromIndex?: number;
+    toIndex?: number;
+    userId: string;
+    userName: string;
+  }) => {
+    const { roomId, action, item, itemId, fromIndex, toIndex, userId, userName } = data;
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    const isHost = room.hostId === userId;
+
+    if (action === 'add') {
+      if (!item) return;
+      const status = isHost || room.playbackControl === 'all' ? 'approved' : 'suggested';
+      const newItem: PlaylistItem = {
+        id: `pl-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        media: item,
+        addedBy: { id: userId, name: userName },
+        addedAt: Date.now(),
+        status
+      };
+      room.playlist.push(newItem);
+
+      // System notification
+      const notice: ChatMessage = {
+        id: `sys-${Date.now()}`,
+        userId: 'system',
+        userName: 'GreenRoom',
+        userAvatar: '',
+        text: status === 'approved' 
+          ? `${userName} added "${item.title}" to the playlist.` 
+          : `${userName} suggested "${item.title}" for the playlist.`,
+        timestamp: Date.now(),
+        isSystem: true
+      };
+      room.chat.push(notice);
+      io.to(roomId).emit('chat-message', notice);
+    } else if (action === 'remove' && itemId) {
+      room.playlist = room.playlist.filter(p => p.id !== itemId);
+    } else if (action === 'reorder' && typeof fromIndex === 'number' && typeof toIndex === 'number') {
+      if (fromIndex >= 0 && fromIndex < room.playlist.length && toIndex >= 0 && toIndex < room.playlist.length) {
+        const [movedItem] = room.playlist.splice(fromIndex, 1);
+        room.playlist.splice(toIndex, 0, movedItem);
+      }
+    } else if (action === 'approve' && itemId && isHost) {
+      const target = room.playlist.find(p => p.id === itemId);
+      if (target) {
+        target.status = 'approved';
+        const notice: ChatMessage = {
+          id: `sys-${Date.now()}`,
+          userId: 'system',
+          userName: 'GreenRoom',
+          userAvatar: '',
+          text: `Host approved "${target.media.title}" for the playlist.`,
+          timestamp: Date.now(),
+          isSystem: true
+        };
+        room.chat.push(notice);
+        io.to(roomId).emit('chat-message', notice);
+      }
+    } else if (action === 'reject' && itemId && isHost) {
+      room.playlist = room.playlist.filter(p => p.id !== itemId);
+    }
+
+    io.to(roomId).emit('playlist-updated', room.playlist);
+  });
+
+  // Group Poll Operations
+  socket.on('poll-action', (data: {
+    roomId: string;
+    action: 'create' | 'vote' | 'close' | 'reset';
+    poll?: any;
+    pollId?: string;
+    optionId?: string;
+    userId: string;
+    userName: string;
+  }) => {
+    const { roomId, action, poll, pollId, optionId, userId, userName } = data;
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    if (action === 'create' && poll) {
+      const newPoll: Poll = {
+        id: `poll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        question: poll.question,
+        options: poll.options.map((optText: string, idx: number) => ({
+          id: `opt-${idx}-${Date.now()}`,
+          text: optText,
+          votes: []
+        })),
+        createdBy: userId,
+        createdByName: userName,
+        createdAt: Date.now(),
+        isActive: true
+      };
+      room.polls.unshift(newPoll);
+
+      const notice: ChatMessage = {
+        id: `sys-${Date.now()}`,
+        userId: 'system',
+        userName: 'GreenRoom',
+        userAvatar: '',
+        text: `New poll started: "${poll.question}"`,
+        timestamp: Date.now(),
+        isSystem: true
+      };
+      room.chat.push(notice);
+      io.to(roomId).emit('chat-message', notice);
+    } else if (action === 'vote' && pollId && optionId) {
+      const targetPoll = room.polls.find(p => p.id === pollId);
+      if (targetPoll && targetPoll.isActive) {
+        // Toggle or switch vote
+        targetPoll.options.forEach(opt => {
+          opt.votes = opt.votes.filter(uId => uId !== userId);
+        });
+        const chosenOpt = targetPoll.options.find(opt => opt.id === optionId);
+        if (chosenOpt) {
+          chosenOpt.votes.push(userId);
+        }
+      }
+    } else if (action === 'close' && pollId) {
+      const targetPoll = room.polls.find(p => p.id === pollId);
+      if (targetPoll && (targetPoll.createdBy === userId || room.hostId === userId)) {
+        targetPoll.isActive = false;
+        // Determine winning option
+        let maxVotes = -1;
+        let winningId: string | undefined;
+        targetPoll.options.forEach(o => {
+          if (o.votes.length > maxVotes) {
+            maxVotes = o.votes.length;
+            winningId = o.id;
+          }
+        });
+        targetPoll.winningOptionId = winningId;
+
+        const winOpt = targetPoll.options.find(o => o.id === winningId);
+        const notice: ChatMessage = {
+          id: `sys-${Date.now()}`,
+          userId: 'system',
+          userName: 'GreenRoom',
+          userAvatar: '',
+          text: `Poll ended! Winner: "${winOpt ? winOpt.text : 'No votes cast'}" (${maxVotes} votes)`,
+          timestamp: Date.now(),
+          isSystem: true
+        };
+        room.chat.push(notice);
+        io.to(roomId).emit('chat-message', notice);
+      }
+    }
+
+    io.to(roomId).emit('polls-updated', room.polls);
+  });
+
+  // Host Privilege Delegation & Room Settings
+  socket.on('host-action', (data: {
+    roomId: string;
+    action: 'transfer' | 'kick' | 'update-settings';
+    targetUserId?: string;
+    settings?: { playbackControl?: 'all' | 'host-only'; title?: string };
+    userId: string;
+    userName: string;
+  }) => {
+    const { roomId, action, targetUserId, settings, userId, userName } = data;
+    const room = rooms.get(roomId);
+    if (!room || room.hostId !== userId) return;
+
+    if (action === 'transfer' && targetUserId) {
+      const targetUser = room.participants.find(p => p.id === targetUserId);
+      if (targetUser) {
+        room.hostId = targetUserId;
+        room.participants.forEach(p => {
+          p.isHost = p.id === targetUserId;
+        });
+
+        const notice: ChatMessage = {
+          id: `sys-${Date.now()}`,
+          userId: 'system',
+          userName: 'GreenRoom',
+          userAvatar: '',
+          text: `${userName} transferred host privileges to ${targetUser.name}.`,
+          timestamp: Date.now(),
+          isSystem: true
+        };
+        room.chat.push(notice);
+        io.to(roomId).emit('chat-message', notice);
+        io.to(roomId).emit('participants-updated', room.participants);
+        io.to(roomId).emit('room-settings-updated', {
+          hostId: room.hostId,
+          playbackControl: room.playbackControl,
+          title: room.title
+        });
+      }
+    } else if (action === 'kick' && targetUserId) {
+      room.participants = room.participants.filter(p => p.id !== targetUserId);
+      io.to(roomId).emit('participants-updated', room.participants);
+      io.to(roomId).emit('participant-kicked', { userId: targetUserId });
+    } else if (action === 'update-settings' && settings) {
+      if (settings.playbackControl) {
+        room.playbackControl = settings.playbackControl;
+      }
+      if (settings.title) {
+        room.title = settings.title;
+      }
+      io.to(roomId).emit('room-settings-updated', {
+        hostId: room.hostId,
+        playbackControl: room.playbackControl,
+        title: room.title
+      });
+    }
+  });
+
+  // Disconnect handler
+  socket.on('disconnect', () => {
+    if (currentRoomId && currentUserId) {
+      const room = rooms.get(currentRoomId);
+      if (room) {
+        const participant = room.participants.find(p => p.id === currentUserId);
+        if (participant) {
+          participant.online = false;
+        }
+
+        // If host disconnected, check if another participant can take over
+        if (room.hostId === currentUserId) {
+          const nextOnline = room.participants.find(p => p.online && p.id !== currentUserId);
+          if (nextOnline) {
+            room.hostId = nextOnline.id;
+            nextOnline.isHost = true;
+            io.to(currentRoomId).emit('room-settings-updated', {
+              hostId: room.hostId,
+              playbackControl: room.playbackControl,
+              title: room.title
+            });
+          }
+        }
+
+        io.to(currentRoomId).emit('participants-updated', room.participants);
+      }
+    }
+  });
+});
+
+// Configure Vite Middlewares in Dev or Static Serving in Prod
+async function startServer() {
+  const isProd = process.env.NODE_ENV === 'production';
+  const port = process.env.PORT || 3000;
+
+  if (!isProd) {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa'
+    });
+    app.use(vite.middlewares);
+  } else {
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    });
+  }
+
+  httpServer.listen(port, () => {
+    console.log(`GreenRoom server running on port ${port} (${isProd ? 'production' : 'development'})`);
+  });
+}
+
+startServer();

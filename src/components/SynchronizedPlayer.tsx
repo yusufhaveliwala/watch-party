@@ -1,0 +1,693 @@
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  RotateCw, 
+  Volume2, 
+  VolumeX, 
+  Maximize, 
+  Minimize, 
+  Gauge, 
+  Link2, 
+  Sparkles,
+  ShieldAlert,
+  Radio,
+  CheckCircle2,
+  AlertCircle,
+  X
+} from 'lucide-react';
+import { useRoom } from '../context/RoomContext';
+import { MediaItem } from '../types/watchParty';
+
+export const SynchronizedPlayer: React.FC = () => {
+  const { 
+    room, 
+    canControlPlayback, 
+    sendPlaybackCommand, 
+    activeReactions, 
+    p95Latency,
+    isHost
+  } = useRoom();
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(1);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [playbackRate, setPlaybackRate] = useState<number>(1.0);
+  const [driftMs, setDriftMs] = useState<number>(0);
+  const [driftStatus, setDriftStatus] = useState<'locked' | 'adjusting' | 'seeking'>('locked');
+  const [showCustomUrlInput, setShowCustomUrlInput] = useState<boolean>(false);
+  const [customUrl, setCustomUrl] = useState<string>('');
+  const [customTitle, setCustomTitle] = useState<string>('');
+  const [customError, setCustomError] = useState<string | null>(null);
+  const [isVideoBuffering, setIsVideoBuffering] = useState<boolean>(false);
+  const [permissionWarning, setPermissionWarning] = useState<string | null>(null);
+  const [showAutoplayPrompt, setShowAutoplayPrompt] = useState<boolean>(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [activeVideoSrc, setActiveVideoSrc] = useState<string>('');
+
+  const isLocalActionRef = useRef<boolean>(false);
+  const lastSyncSequenceRef = useRef<number>(-1);
+
+  const currentMedia = room?.playback.media;
+
+  // Sync active video src when currentMedia changes
+  useEffect(() => {
+    if (currentMedia?.videoUrl) {
+      setActiveVideoSrc(currentMedia.videoUrl);
+      setVideoError(null);
+    }
+  }, [currentMedia?.videoUrl]);
+
+  // Resilient error handler for broken video links or 403 errors
+  const handleVideoError = () => {
+    console.warn('[SynchronizedPlayer] Video stream error for:', activeVideoSrc);
+    const resilientCdn = 'https://vjs.zencdn.net/v/oceans.mp4';
+    if (activeVideoSrc && activeVideoSrc !== resilientCdn) {
+      setVideoError('Primary stream mirror was unreachable. Automatically switched to high-reliability backup stream.');
+      setActiveVideoSrc(resilientCdn);
+    } else {
+      setVideoError('Video source could not be played. Please select another title or enter a custom MP4 URL.');
+    }
+    setIsVideoBuffering(false);
+  };
+
+  // Format seconds to MM:SS
+  const formatTime = (secs: number) => {
+    if (isNaN(secs) || secs < 0) return '00:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  // Server state sync listener
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !room?.playback) return;
+
+    const serverState = room.playback;
+
+    // Check if sequence updated or new media
+    if (serverState.sequenceNumber !== lastSyncSequenceRef.current) {
+      lastSyncSequenceRef.current = serverState.sequenceNumber;
+
+      // Calculate authoritative position right now
+      const elapsed = serverState.status === 'playing' 
+        ? ((Date.now() - serverState.updatedAt) / 1000) * serverState.playbackRate 
+        : 0;
+      const targetPosition = serverState.position + elapsed;
+
+      // Check current delta
+      const delta = Math.abs(video.currentTime - targetPosition);
+      setDriftMs(Math.round(delta * 1000));
+
+      if (delta > 0.5) {
+        setDriftStatus('seeking');
+        video.currentTime = Math.max(0, targetPosition);
+      }
+
+      if (serverState.playbackRate !== video.playbackRate) {
+        video.playbackRate = serverState.playbackRate;
+        setPlaybackRate(serverState.playbackRate);
+      }
+
+      if (serverState.status === 'playing') {
+        video.play().catch(() => {
+          // Autoplay policy fallback: mute and play
+          video.muted = true;
+          setIsMuted(true);
+          setShowAutoplayPrompt(true);
+          video.play().catch(() => {});
+        });
+        setIsPlaying(true);
+      } else {
+        video.pause();
+        setIsPlaying(false);
+      }
+    }
+  }, [room?.playback]);
+
+  // Periodic Drift Correction Loop (checks every 1.5 seconds)
+  useEffect(() => {
+    const driftInterval = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || !room?.playback) return;
+
+      const serverState = room.playback;
+      if (serverState.status !== 'playing') {
+        setDriftMs(0);
+        setDriftStatus('locked');
+        return;
+      }
+
+      const elapsed = ((Date.now() - serverState.updatedAt) / 1000) * serverState.playbackRate;
+      const targetTime = serverState.position + elapsed;
+      const currentDelta = video.currentTime - targetTime;
+      const absDelta = Math.abs(currentDelta);
+      const measuredDriftMs = Math.round(absDelta * 1000);
+      setDriftMs(measuredDriftMs);
+
+      // Algorithmic Drift Correction Strategy
+      if (absDelta > 1.2) {
+        // High drift: snap seek directly
+        setDriftStatus('seeking');
+        video.currentTime = Math.max(0, targetTime);
+        setTimeout(() => setDriftStatus('locked'), 400);
+      } else if (absDelta > 0.35) {
+        // Moderate drift (> 350ms): micro-adjust playback rate smoothly
+        setDriftStatus('adjusting');
+        // If client is behind, speed up slightly (1.06x); if client is ahead, slow down (0.94x)
+        const adjustedRate = currentDelta < 0 
+          ? serverState.playbackRate * 1.06 
+          : serverState.playbackRate * 0.94;
+        video.playbackRate = adjustedRate;
+      } else {
+        // In tight lock (< 350ms drift)
+        setDriftStatus('locked');
+        if (video.playbackRate !== serverState.playbackRate) {
+          video.playbackRate = serverState.playbackRate;
+        }
+      }
+    }, 1500);
+
+    return () => clearInterval(driftInterval);
+  }, [room?.playback]);
+
+  // Video element events
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration || currentMedia?.duration || 0);
+    }
+  };
+
+  const handleEnded = () => {
+    // Check if auto-advance in playlist
+    if (room?.playlist && room.playlist.length > 1 && canControlPlayback) {
+      const currentIndex = room.playlist.findIndex(p => p.media.id === currentMedia?.id);
+      if (currentIndex >= 0 && currentIndex < room.playlist.length - 1) {
+        const nextItem = room.playlist[currentIndex + 1];
+        sendPlaybackCommand('change-media', { media: nextItem.media, position: 0 });
+      }
+    }
+  };
+
+  // Play/Pause Action
+  const togglePlay = () => {
+    if (!canControlPlayback) {
+      showPermissionDenied();
+      return;
+    }
+    const nextAction = isPlaying ? 'pause' : 'play';
+    const pos = videoRef.current ? videoRef.current.currentTime : currentTime;
+    sendPlaybackCommand(nextAction, { position: pos });
+  };
+
+  // Seek relative
+  const handleSeekRelative = (seconds: number) => {
+    if (!canControlPlayback) {
+      showPermissionDenied();
+      return;
+    }
+    const newPos = Math.max(0, Math.min(currentTime + seconds, duration || 3600));
+    if (videoRef.current) {
+      videoRef.current.currentTime = newPos;
+    }
+    setCurrentTime(newPos);
+    sendPlaybackCommand('seek', { position: newPos });
+  };
+
+  // Scrubber change
+  const handleScrubberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canControlPlayback) {
+      showPermissionDenied();
+      return;
+    }
+    const newPos = parseFloat(e.target.value);
+    if (videoRef.current) {
+      videoRef.current.currentTime = newPos;
+    }
+    setCurrentTime(newPos);
+    sendPlaybackCommand('seek', { position: newPos });
+  };
+
+  // Rate change
+  const handleRateChange = (newRate: number) => {
+    if (!canControlPlayback) {
+      showPermissionDenied();
+      return;
+    }
+    setPlaybackRate(newRate);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = newRate;
+    }
+    sendPlaybackCommand('rate', { 
+      playbackRate: newRate,
+      position: videoRef.current?.currentTime || currentTime 
+    });
+  };
+
+  // Volume
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setVolume(val);
+    if (videoRef.current) {
+      videoRef.current.volume = val;
+      if (val === 0) {
+        setIsMuted(true);
+        videoRef.current.muted = true;
+      } else if (isMuted) {
+        setIsMuted(false);
+        videoRef.current.muted = false;
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      const nextMuted = !isMuted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
+
+  const handleEnableAudio = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = false;
+      setIsMuted(false);
+      videoRef.current.volume = 1;
+      setVolume(1);
+      setShowAutoplayPrompt(false);
+    }
+  };
+
+  // Fullscreen
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  // Show host-only restriction warning
+  const showPermissionDenied = () => {
+    setPermissionWarning('Playback controls are restricted to the Room Host.');
+    setTimeout(() => setPermissionWarning(null), 3000);
+  };
+
+  // Custom Direct URL submission
+  const handleLoadCustomUrl = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canControlPlayback) {
+      showPermissionDenied();
+      return;
+    }
+    if (!customUrl.trim()) {
+      setCustomError('Please provide a valid video URL');
+      return;
+    }
+    const newMedia: MediaItem = {
+      id: `custom-${Date.now()}`,
+      title: customTitle.trim() || 'Custom Stream URL',
+      year: new Date().getFullYear(),
+      duration: 3600,
+      genre: ['Direct Stream'],
+      synopsis: 'Custom user provided streaming media link.',
+      cast: ['User Media'],
+      director: 'Web Stream',
+      posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
+      videoUrl: customUrl.trim(),
+      rating: 8.0,
+      sourceType: 'direct-stream'
+    };
+    sendPlaybackCommand('change-media', { media: newMedia, position: 0 });
+    setShowCustomUrlInput(false);
+    setCustomUrl('');
+    setCustomTitle('');
+    setCustomError(null);
+  };
+
+  return (
+    <div className="flex flex-col gap-3 w-full">
+      {/* Video Container Box */}
+      <div 
+        ref={containerRef}
+        className="relative group w-full bg-black rounded-2xl overflow-hidden aspect-video shadow-md border border-[#E1EBE2] flex items-center justify-center"
+      >
+        {/* HTML5 Native Video Tag */}
+        {currentMedia?.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={activeVideoSrc || currentMedia.videoUrl}
+            className="w-full h-full object-contain"
+            playsInline
+            onError={handleVideoError}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onWaiting={() => setIsVideoBuffering(true)}
+            onPlaying={() => {
+              setIsVideoBuffering(false);
+              setVideoError(null);
+            }}
+            onEnded={handleEnded}
+            onClick={togglePlay}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-center text-zinc-400">
+            <Radio className="w-12 h-12 text-[#4C956C] mb-3 animate-pulse" />
+            <p className="text-base font-semibold text-white">No Video Playing</p>
+            <p className="text-xs text-zinc-400 mt-1 max-w-sm">
+              Select a movie from the catalog, pick from the playlist, or load a custom direct MP4 stream URL.
+            </p>
+          </div>
+        )}
+
+        {/* Floating Emoji Reactions Overlay */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+          {activeReactions.map((react) => (
+            <div
+              key={react.id}
+              style={{ left: `${react.xOffset || 50}%` }}
+              className="absolute bottom-16 -translate-x-1/2 flex flex-col items-center animate-bounce transition-all duration-1000 ease-out"
+            >
+              <span className="text-4xl filter drop-shadow-md select-none">{react.emoji}</span>
+              <span className="text-[10px] font-medium text-white/90 bg-black/50 px-2 py-0.5 rounded-full mt-0.5 whitespace-nowrap">
+                {react.userName}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Buffering Indicator */}
+        {isVideoBuffering && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 pointer-events-none">
+            <div className="flex items-center gap-2 bg-black/70 px-4 py-2 rounded-xl text-white text-xs font-medium backdrop-blur-sm">
+              <div className="w-4 h-4 border-2 border-t-[#4C956C] border-white/20 rounded-full animate-spin" />
+              <span>Buffering stream...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Autoplay Audio Muted Banner */}
+        {showAutoplayPrompt && (
+          <div className="absolute top-4 left-4 z-30 bg-[#20382B]/90 border border-[#A8D5BA] text-white text-xs px-3.5 py-1.5 rounded-xl flex items-center gap-2.5 backdrop-blur-md shadow-lg">
+            <VolumeX className="w-4 h-4 text-amber-300 shrink-0" />
+            <span className="font-medium">Audio muted by browser autoplay policy</span>
+            <button
+              onClick={handleEnableAudio}
+              className="px-2.5 py-0.5 rounded-lg bg-[#4C956C] hover:bg-[#3d7a57] text-white text-[11px] font-bold transition-colors ml-1 shadow-2xs"
+            >
+              Unmute Audio
+            </button>
+          </div>
+        )}
+
+        {/* Video Stream Error Recovery Banner */}
+        {videoError && (
+          <div className="absolute top-4 left-4 right-4 sm:left-4 sm:right-auto max-w-md z-30 bg-[#20382B]/95 border border-[#A8D5BA] text-white text-xs px-3.5 py-2 rounded-xl flex items-center justify-between gap-3 backdrop-blur-md shadow-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-[11px] leading-snug">{videoError}</span>
+            </div>
+            <button
+              onClick={() => setVideoError(null)}
+              className="text-zinc-400 hover:text-white p-0.5 rounded cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Permission Denied Flash Banner */}
+        {permissionWarning && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 bg-black/80 border border-amber-400/50 text-amber-200 text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-2 backdrop-blur-md shadow-lg">
+            <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <span>{permissionWarning}</span>
+          </div>
+        )}
+
+        {/* Drift Status HUD Badge */}
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-none">
+          <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 text-[11px] font-mono text-white">
+            <span 
+              className={`w-1.5 h-1.5 rounded-full ${
+                driftStatus === 'locked' ? 'bg-[#4C956C]' : 'bg-amber-400 animate-ping'
+              }`} 
+            />
+            <span>Sync:</span>
+            <span className={driftMs < 350 ? 'text-[#A8D5BA]' : 'text-amber-300'}>
+              {driftMs}ms
+            </span>
+          </div>
+        </div>
+
+        {/* Custom Video Controls Bar */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 opacity-95 group-hover:opacity-100 transition-opacity">
+          {/* Timeline Scrubber */}
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-[11px] font-mono text-zinc-300 select-none tabular-nums">
+              {formatTime(currentTime)}
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              step={0.1}
+              value={currentTime}
+              onChange={handleScrubberChange}
+              disabled={!canControlPlayback}
+              className="w-full h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#4C956C] disabled:opacity-50"
+            />
+            <span className="text-[11px] font-mono text-zinc-400 select-none tabular-nums">
+              {formatTime(duration)}
+            </span>
+          </div>
+
+          {/* Action Buttons Toolbar */}
+          <div className="flex items-center justify-between">
+            {/* Left Controls: Play, Seek, Volume */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={togglePlay}
+                disabled={!canControlPlayback}
+                className="w-9 h-9 rounded-lg bg-[#4C956C] hover:bg-[#3d7a57] disabled:opacity-50 text-white flex items-center justify-center transition-colors shadow-sm"
+                title={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+              </button>
+
+              <button
+                onClick={() => handleSeekRelative(-10)}
+                disabled={!canControlPlayback}
+                className="p-2 text-zinc-300 hover:text-white disabled:opacity-40 transition-colors"
+                title="Seek backward 10 seconds"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => handleSeekRelative(10)}
+                disabled={!canControlPlayback}
+                className="p-2 text-zinc-300 hover:text-white disabled:opacity-40 transition-colors"
+                title="Seek forward 10 seconds"
+              >
+                <RotateCw className="w-4 h-4" />
+              </button>
+
+              {/* Volume Slider */}
+              <div className="flex items-center gap-1.5 pl-1">
+                <button
+                  onClick={toggleMute}
+                  className="p-1.5 text-zinc-300 hover:text-white transition-colors"
+                  title={isMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  className="w-16 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#4C956C]"
+                />
+              </div>
+            </div>
+
+            {/* Right Controls: Playback Rate, Load URL, Fullscreen */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Playback Rate Selector */}
+              <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-lg text-xs text-white">
+                <Gauge className="w-3.5 h-3.5 text-[#A8D5BA]" />
+                <select
+                  value={playbackRate}
+                  onChange={(e) => handleRateChange(parseFloat(e.target.value))}
+                  disabled={!canControlPlayback}
+                  className="bg-transparent text-xs text-white font-mono focus:outline-none cursor-pointer disabled:opacity-50"
+                >
+                  <option value={0.75} className="bg-zinc-800">0.75x</option>
+                  <option value={1.0} className="bg-zinc-800">1.0x</option>
+                  <option value={1.25} className="bg-zinc-800">1.25x</option>
+                  <option value={1.5} className="bg-zinc-800">1.5x</option>
+                  <option value={2.0} className="bg-zinc-800">2.0x</option>
+                </select>
+              </div>
+
+              {/* Custom URL prompt button */}
+              <button
+                onClick={() => setShowCustomUrlInput(!showCustomUrlInput)}
+                className={`p-2 rounded-lg transition-colors text-xs flex items-center gap-1 ${
+                  showCustomUrlInput 
+                    ? 'bg-[#4C956C] text-white' 
+                    : 'text-zinc-300 hover:text-white bg-white/10'
+                }`}
+                title="Stream Custom Video URL"
+              >
+                <Link2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-[11px] font-medium">Custom URL</span>
+              </button>
+
+              {/* Fullscreen Button */}
+              <button
+                onClick={toggleFullscreen}
+                className="p-2 text-zinc-300 hover:text-white transition-colors"
+                title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+              >
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Stream URL Drawer */}
+      {showCustomUrlInput && (
+        <form 
+          onSubmit={handleLoadCustomUrl}
+          className="p-3.5 bg-white rounded-xl border border-[#E1EBE2] shadow-sm flex flex-col gap-2.5 transition-all"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-[#20382B] flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5 text-[#4C956C]" />
+              Watch Custom Video Stream (Direct MP4 / WebM)
+            </span>
+            <span className="text-[11px] text-[#6B7C70]">
+              Synchronized across all participants
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              type="text"
+              placeholder="Movie / Video Title (Optional)"
+              value={customTitle}
+              onChange={(e) => setCustomTitle(e.target.value)}
+              className="text-xs px-3 py-2 rounded-lg border border-[#E1EBE2] focus:outline-none focus:border-[#4C956C] text-[#20382B]"
+            />
+            <input
+              type="url"
+              placeholder="https://example.com/stream.mp4"
+              value={customUrl}
+              onChange={(e) => setCustomUrl(e.target.value)}
+              required
+              className="sm:col-span-2 text-xs px-3 py-2 rounded-lg border border-[#E1EBE2] focus:outline-none focus:border-[#4C956C] text-[#20382B]"
+            />
+          </div>
+
+          {customError && (
+            <p className="text-xs text-rose-600 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {customError}
+            </p>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowCustomUrlInput(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#6B7C70] hover:bg-[#F8FAF6]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!canControlPlayback}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#4C956C] hover:bg-[#3d7a57] text-white disabled:opacity-50 transition-colors"
+            >
+              Start Streaming
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Current Media Header & Metadata Bar */}
+      {currentMedia && (
+        <div className="bg-white p-4 rounded-xl border border-[#E1EBE2] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <img
+              src={currentMedia.posterUrl}
+              alt={currentMedia.title}
+              className="w-12 h-16 rounded-lg object-cover border border-[#E1EBE2] shrink-0 shadow-sm"
+              referrerPolicy="no-referrer"
+            />
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-bold text-[#20382B]">
+                  {currentMedia.title}
+                </h2>
+                <span className="text-xs text-[#6B7C70]">({currentMedia.year})</span>
+                <span className="text-[11px] font-semibold text-[#4C956C] bg-[#DDF3E4] px-2 py-0.5 rounded-md">
+                  ★ {currentMedia.rating.toFixed(1)}
+                </span>
+              </div>
+              <p className="text-xs text-[#6B7C70] mt-0.5 line-clamp-1">
+                {currentMedia.genre.join(' · ')} · Directed by {currentMedia.director}
+              </p>
+            </div>
+          </div>
+
+          {/* Sync Stats Pill-free metrics */}
+          <div className="flex items-center gap-4 text-xs text-[#6B7C70] border-t sm:border-t-0 sm:border-l border-[#E1EBE2] pt-2 sm:pt-0 sm:pl-4 shrink-0">
+            <div>
+              <span className="block text-[10px] uppercase tracking-wider text-[#6B7C70]">Room Drift</span>
+              <span className="font-mono font-semibold text-[#20382B]">{driftMs} ms</span>
+            </div>
+            <div>
+              <span className="block text-[10px] uppercase tracking-wider text-[#6B7C70]">p95 Latency</span>
+              <span className="font-mono font-semibold text-[#20382B]">{p95Latency} ms</span>
+            </div>
+            <div>
+              <span className="block text-[10px] uppercase tracking-wider text-[#6B7C70]">Control Mode</span>
+              <span className="font-medium text-[#4C956C]">
+                {room?.playbackControl === 'host-only' ? 'Host Only' : 'Open Controls'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

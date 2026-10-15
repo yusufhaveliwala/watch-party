@@ -1,0 +1,1342 @@
+[
+  {
+    "id": "CINEMA-1",
+    "title": "Friday Indie & Sci-Fi Premiere",
+    "hostId": "user-mv9vqa2z-o9dt",
+    "playbackControl": "all",
+    "playback": {
+      "media": {
+        "id": "movie-big-buck-bunny",
+        "title": "Big Buck Bunny: Forest Awakening",
+        "year": 2008,
+        "duration": 596,
+        "genre": [
+          "Animation",
+          "Comedy",
+          "Family"
+        ],
+        "synopsis": "A large and lovable rabbit deals with bullying woodland creatures who ruin his peaceful morning. With clever traps and forest agility, he turns the tables in a hilarious showdown.",
+        "cast": [
+          "Animated Ensembles"
+        ],
+        "director": "Sacha Goedegebure",
+        "posterUrl": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 7.9,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 0,
+      "playbackRate": 1,
+      "updatedAt": 1792090752739,
+      "sequenceNumber": 8
+    },
+    "participants": [
+      {
+        "id": "host-alice",
+        "name": "Alice (Host)",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Alice",
+        "isHost": true,
+        "joinedAt": 1792089576338,
+        "latencyMs": 18,
+        "online": false
+      },
+      {
+        "id": "bot-marco",
+        "name": "Marco",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Marco",
+        "isHost": false,
+        "joinedAt": 1792089876338,
+        "latencyMs": 25,
+        "online": false
+      },
+      {
+        "id": "bench-user-9",
+        "name": "Peer 9",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792090501585,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-0",
+        "name": "Peer 0",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501678,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-2",
+        "name": "Peer 2",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501679,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-3",
+        "name": "Peer 3",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501680,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-4",
+        "name": "Peer 4",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501682,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-1",
+        "name": "Peer 1",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501683,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-5",
+        "name": "Peer 5",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501684,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-7",
+        "name": "Peer 7",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501686,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-6",
+        "name": "Peer 6",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501688,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "bench-user-8",
+        "name": "Peer 8",
+        "avatar": "",
+        "isHost": false,
+        "joinedAt": 1792090501690,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "user-mv9vqa2z-o9dt",
+        "name": "Laurel_276",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Laurel_276",
+        "isHost": true,
+        "joinedAt": 1792090688104,
+        "latencyMs": 20,
+        "online": false,
+        "lastPing": 1792090688106
+      }
+    ],
+    "playlist": [
+      {
+        "id": "item-1",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "host-alice",
+          "name": "Alice (Host)"
+        },
+        "addedAt": 1792089576338,
+        "status": "approved"
+      },
+      {
+        "id": "item-2",
+        "media": {
+          "id": "movie-big-buck-bunny",
+          "title": "Big Buck Bunny: Forest Awakening",
+          "year": 2008,
+          "duration": 596,
+          "genre": [
+            "Animation",
+            "Comedy",
+            "Family"
+          ],
+          "synopsis": "A large and lovable rabbit deals with bullying woodland creatures who ruin his peaceful morning. With clever traps and forest agility, he turns the tables in a hilarious showdown.",
+          "cast": [
+            "Animated Ensembles"
+          ],
+          "director": "Sacha Goedegebure",
+          "posterUrl": "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 7.9,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "bot-marco",
+          "name": "Marco"
+        },
+        "addedAt": 1792089776338,
+        "status": "approved"
+      },
+      {
+        "id": "item-3",
+        "media": {
+          "id": "movie-sintel",
+          "title": "Sintel: The Dragon Quest",
+          "year": 2010,
+          "duration": 888,
+          "genre": [
+            "Fantasy",
+            "Animation",
+            "Adventure"
+          ],
+          "synopsis": "A lonely young warrior named Sintel rescues a wounded baby dragon, nursing it back to health. When an adult dragon swoops down and takes it away, she sets out on an arduous journey across frostbitten lands.",
+          "cast": [
+            "Halina Reijn",
+            "Thom Hoffman"
+          ],
+          "director": "Colin Levy",
+          "posterUrl": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/sintel/trailer.mp4",
+          "rating": 8.6,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "bot-marco",
+          "name": "Marco"
+        },
+        "addedAt": 1792089976338,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Welcome to Friday Indie & Sci-Fi Premiere! Grab your popcorn.",
+        "timestamp": 1792089576338,
+        "isSystem": true
+      },
+      {
+        "id": "msg-2",
+        "userId": "host-alice",
+        "userName": "Alice (Host)",
+        "userAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Alice",
+        "text": "Hey everyone! Cosmos Laundromat is queued up. Let me know when ready!",
+        "timestamp": 1792089676338
+      },
+      {
+        "id": "msg-3",
+        "userId": "bot-marco",
+        "userName": "Marco",
+        "userAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Marco",
+        "text": "Audio & sync look crystal clear on my end! 🔥",
+        "timestamp": 1792089926338
+      },
+      {
+        "id": "sys-1792090501585-kbg",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 9 joined the room",
+        "timestamp": 1792090501585,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501678-mu2",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 0 joined the room",
+        "timestamp": 1792090501678,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501679-gpk",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 2 joined the room",
+        "timestamp": 1792090501679,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501680-7e0",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 3 joined the room",
+        "timestamp": 1792090501680,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501682-xu4",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 4 joined the room",
+        "timestamp": 1792090501682,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501683-gka",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 1 joined the room",
+        "timestamp": 1792090501683,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501684-ccg",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 5 joined the room",
+        "timestamp": 1792090501684,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501686-sg1",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 7 joined the room",
+        "timestamp": 1792090501686,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501688-rd2",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 6 joined the room",
+        "timestamp": 1792090501688,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090501690-409",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Peer 8 joined the room",
+        "timestamp": 1792090501690,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090688104-2bs",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Laurel_276 joined the room",
+        "timestamp": 1792090688104,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090688106-er3",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Laurel_276 joined the room",
+        "timestamp": 1792090688106,
+        "isSystem": true
+      }
+    ],
+    "polls": [
+      {
+        "id": "poll-1",
+        "question": "Which movie should we stream right after Cosmos Laundromat?",
+        "options": [
+          {
+            "id": "opt-1",
+            "text": "Big Buck Bunny: Forest Awakening",
+            "votes": [
+              "host-alice"
+            ]
+          },
+          {
+            "id": "opt-2",
+            "text": "Sintel: The Dragon Quest",
+            "votes": [
+              "bot-marco"
+            ]
+          },
+          {
+            "id": "opt-3",
+            "text": "Tears of Steel: Neon Vanguard",
+            "votes": []
+          }
+        ],
+        "createdBy": "host-alice",
+        "createdByName": "Alice (Host)",
+        "createdAt": 1792089826338,
+        "isActive": true
+      }
+    ],
+    "createdAt": 1792089476338
+  },
+  {
+    "id": "JRY37E",
+    "title": "Confidential Security Screening",
+    "hostId": "attacker-1792090183858",
+    "playbackControl": "host-only",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 724,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 45.411,
+      "playbackRate": 1,
+      "updatedAt": 1792090183868,
+      "sequenceNumber": 2
+    },
+    "participants": [
+      {
+        "id": "user-mv9w8354-0kya",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9w8354-0kya",
+        "isHost": false,
+        "joinedAt": 1792090183144,
+        "latencyMs": 15,
+        "online": false
+      },
+      {
+        "id": "host-1792090183099",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Host",
+        "isHost": false,
+        "joinedAt": 1792090183156,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "attacker-1792090183858",
+        "name": "Malicious Guest",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792090183868,
+        "latencyMs": 20,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792090183144",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9w8354-0kya",
+          "name": "Security Host"
+        },
+        "addedAt": 1792090183144,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792090183144",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Confidential Security Screening\" created. Invite friends with code JRY37E!",
+        "timestamp": 1792090183144,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090183156-oto",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host joined the room",
+        "timestamp": 1792090183156,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090183868-lr7",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Malicious Guest joined the room",
+        "timestamp": 1792090183868,
+        "isSystem": true
+      },
+      {
+        "id": "msg-1792090184974-f2xf",
+        "userId": "attacker-1792090183858",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 0",
+        "timestamp": 1792090184974
+      },
+      {
+        "id": "msg-1792090184975-xe0p",
+        "userId": "attacker-1792090183858",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 1",
+        "timestamp": 1792090184975
+      },
+      {
+        "id": "msg-1792090184975-j7zo",
+        "userId": "attacker-1792090183858",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 2",
+        "timestamp": 1792090184975
+      },
+      {
+        "id": "msg-1792090184975-4mox",
+        "userId": "attacker-1792090183858",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 3",
+        "timestamp": 1792090184975
+      },
+      {
+        "id": "sys-1792090185476",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host transferred host privileges to Malicious Guest.",
+        "timestamp": 1792090185476,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792090183144
+  },
+  {
+    "id": "V2XKRT",
+    "title": "Confidential Security Screening",
+    "hostId": "attacker-1792090519310",
+    "playbackControl": "host-only",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 724,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 45.414,
+      "playbackRate": 1,
+      "updatedAt": 1792090519322,
+      "sequenceNumber": 2
+    },
+    "participants": [
+      {
+        "id": "user-mv9wf9za-3jcl",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9wf9za-3jcl",
+        "isHost": false,
+        "joinedAt": 1792090518598,
+        "latencyMs": 15,
+        "online": false
+      },
+      {
+        "id": "host-1792090518558",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Host",
+        "isHost": false,
+        "joinedAt": 1792090518607,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "attacker-1792090519310",
+        "name": "Malicious Guest",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792090519322,
+        "latencyMs": 20,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792090518598",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9wf9za-3jcl",
+          "name": "Security Host"
+        },
+        "addedAt": 1792090518598,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792090518598",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Confidential Security Screening\" created. Invite friends with code V2XKRT!",
+        "timestamp": 1792090518598,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090518607-vfu",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host joined the room",
+        "timestamp": 1792090518607,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792090519322-8zg",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Malicious Guest joined the room",
+        "timestamp": 1792090519322,
+        "isSystem": true
+      },
+      {
+        "id": "msg-1792090520427-wum7",
+        "userId": "attacker-1792090519310",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 0",
+        "timestamp": 1792090520427
+      },
+      {
+        "id": "msg-1792090520427-9fwm",
+        "userId": "attacker-1792090519310",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 1",
+        "timestamp": 1792090520427
+      },
+      {
+        "id": "msg-1792090520428-kwrp",
+        "userId": "attacker-1792090519310",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 2",
+        "timestamp": 1792090520428
+      },
+      {
+        "id": "msg-1792090520428-rdan",
+        "userId": "attacker-1792090519310",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 3",
+        "timestamp": 1792090520428
+      },
+      {
+        "id": "sys-1792090520928",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host transferred host privileges to Malicious Guest.",
+        "timestamp": 1792090520928,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792090518598
+  },
+  {
+    "id": "LT8KHZ",
+    "title": "Confidential Security Screening",
+    "hostId": "attacker-1792091825124",
+    "playbackControl": "host-only",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 724,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 45.412,
+      "playbackRate": 1,
+      "updatedAt": 1792091825138,
+      "sequenceNumber": 2
+    },
+    "participants": [
+      {
+        "id": "user-mv9x79jx-ds2r",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9x79jx-ds2r",
+        "isHost": false,
+        "joinedAt": 1792091824413,
+        "latencyMs": 15,
+        "online": false
+      },
+      {
+        "id": "host-1792091824368",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Host",
+        "isHost": false,
+        "joinedAt": 1792091824489,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "attacker-1792091825124",
+        "name": "Malicious Guest",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792091825138,
+        "latencyMs": 20,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792091824413",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9x79jx-ds2r",
+          "name": "Security Host"
+        },
+        "addedAt": 1792091824413,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792091824413",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Confidential Security Screening\" created. Invite friends with code LT8KHZ!",
+        "timestamp": 1792091824413,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792091824489-ds6",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host joined the room",
+        "timestamp": 1792091824489,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792091825138-93z",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Malicious Guest joined the room",
+        "timestamp": 1792091825138,
+        "isSystem": true
+      },
+      {
+        "id": "msg-1792091826242-rk35",
+        "userId": "attacker-1792091825124",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 0",
+        "timestamp": 1792091826242
+      },
+      {
+        "id": "msg-1792091826243-lz0h",
+        "userId": "attacker-1792091825124",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 1",
+        "timestamp": 1792091826243
+      },
+      {
+        "id": "msg-1792091826243-99nc",
+        "userId": "attacker-1792091825124",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 2",
+        "timestamp": 1792091826243
+      },
+      {
+        "id": "msg-1792091826243-a5ul",
+        "userId": "attacker-1792091825124",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 3",
+        "timestamp": 1792091826243
+      },
+      {
+        "id": "sys-1792091826744",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host transferred host privileges to Malicious Guest.",
+        "timestamp": 1792091826744,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792091824413,
+    "isPermanent": false
+  },
+  {
+    "id": "EVERGREEN",
+    "title": "Evergreen Cinema Club",
+    "hostId": "user-mv9x7jtm-okbz",
+    "playbackControl": "all",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 724,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "paused",
+      "position": 0,
+      "playbackRate": 1,
+      "updatedAt": 1792091837722,
+      "sequenceNumber": 1
+    },
+    "participants": [
+      {
+        "id": "user-mv9x7jtm-okbz",
+        "name": "TestHost",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9x7jtm-okbz",
+        "isHost": true,
+        "joinedAt": 1792091837722,
+        "latencyMs": 15,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792091837722",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9x7jtm-okbz",
+          "name": "TestHost"
+        },
+        "addedAt": 1792091837722,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792091837722",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Evergreen Cinema Club\" created. Invite friends with code EVERGREEN!",
+        "timestamp": 1792091837722,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792091837722,
+    "isPermanent": true
+  },
+  {
+    "id": "NVTDSS",
+    "title": "Confidential Security Screening",
+    "hostId": "attacker-1792092495781",
+    "playbackControl": "host-only",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 724,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 45.413,
+      "playbackRate": 1,
+      "updatedAt": 1792092495794,
+      "sequenceNumber": 2
+    },
+    "participants": [
+      {
+        "id": "user-mv9xln18-s30m",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9xln18-s30m",
+        "isHost": false,
+        "joinedAt": 1792092495068,
+        "latencyMs": 15,
+        "online": false
+      },
+      {
+        "id": "host-1792092495025",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Host",
+        "isHost": false,
+        "joinedAt": 1792092495141,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "attacker-1792092495781",
+        "name": "Malicious Guest",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792092495794,
+        "latencyMs": 20,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792092495068",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 724,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9xln18-s30m",
+          "name": "Security Host"
+        },
+        "addedAt": 1792092495068,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792092495068",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Confidential Security Screening\" created. Invite friends with code NVTDSS!",
+        "timestamp": 1792092495068,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792092495141-6gp",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host joined the room",
+        "timestamp": 1792092495141,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792092495794-uum",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Malicious Guest joined the room",
+        "timestamp": 1792092495794,
+        "isSystem": true
+      },
+      {
+        "id": "msg-1792092496898-4dqg",
+        "userId": "attacker-1792092495781",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 0",
+        "timestamp": 1792092496898
+      },
+      {
+        "id": "msg-1792092496899-ptrn",
+        "userId": "attacker-1792092495781",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 1",
+        "timestamp": 1792092496899
+      },
+      {
+        "id": "msg-1792092496899-kxxm",
+        "userId": "attacker-1792092495781",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 2",
+        "timestamp": 1792092496899
+      },
+      {
+        "id": "msg-1792092496899-k3pq",
+        "userId": "attacker-1792092495781",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 3",
+        "timestamp": 1792092496899
+      },
+      {
+        "id": "sys-1792092497401",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host transferred host privileges to Malicious Guest.",
+        "timestamp": 1792092497401,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792092495068,
+    "isPermanent": false
+  },
+  {
+    "id": "YTR8QQ",
+    "title": "Confidential Security Screening",
+    "hostId": "attacker-1792093518172",
+    "playbackControl": "host-only",
+    "playback": {
+      "media": {
+        "id": "movie-cosmic-laundromat",
+        "title": "Cosmos Laundromat (First Cycle)",
+        "year": 2015,
+        "duration": 596,
+        "genre": [
+          "Sci-Fi",
+          "Animation",
+          "Fantasy"
+        ],
+        "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+        "cast": [
+          "Pierre Bokma",
+          "Reinout Scholten van Aschat"
+        ],
+        "director": "Mathieu Auvray",
+        "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "rating": 8.4,
+        "sourceType": "short-film"
+      },
+      "status": "playing",
+      "position": 45.41,
+      "playbackRate": 1,
+      "updatedAt": 1792093518182,
+      "sequenceNumber": 2
+    },
+    "participants": [
+      {
+        "id": "user-mv9y7jx0-f6s1",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=user-mv9y7jx0-f6s1",
+        "isHost": false,
+        "joinedAt": 1792093517460,
+        "latencyMs": 15,
+        "online": false
+      },
+      {
+        "id": "host-1792093517417",
+        "name": "Security Host",
+        "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Host",
+        "isHost": false,
+        "joinedAt": 1792093517533,
+        "latencyMs": 20,
+        "online": false
+      },
+      {
+        "id": "attacker-1792093518172",
+        "name": "Malicious Guest",
+        "avatar": "",
+        "isHost": true,
+        "joinedAt": 1792093518182,
+        "latencyMs": 20,
+        "online": false
+      }
+    ],
+    "playlist": [
+      {
+        "id": "pl-1792093517460",
+        "media": {
+          "id": "movie-cosmic-laundromat",
+          "title": "Cosmos Laundromat (First Cycle)",
+          "year": 2015,
+          "duration": 596,
+          "genre": [
+            "Sci-Fi",
+            "Animation",
+            "Fantasy"
+          ],
+          "synopsis": "On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.",
+          "cast": [
+            "Pierre Bokma",
+            "Reinout Scholten van Aschat"
+          ],
+          "director": "Mathieu Auvray",
+          "posterUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+          "videoUrl": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+          "rating": 8.4,
+          "sourceType": "short-film"
+        },
+        "addedBy": {
+          "id": "user-mv9y7jx0-f6s1",
+          "name": "Security Host"
+        },
+        "addedAt": 1792093517460,
+        "status": "approved"
+      }
+    ],
+    "chat": [
+      {
+        "id": "msg-1792093517460",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Room \"Confidential Security Screening\" created. Invite friends with code YTR8QQ!",
+        "timestamp": 1792093517460,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792093517533-8u0",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host joined the room",
+        "timestamp": 1792093517533,
+        "isSystem": true
+      },
+      {
+        "id": "sys-1792093518182-37r",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Malicious Guest joined the room",
+        "timestamp": 1792093518182,
+        "isSystem": true
+      },
+      {
+        "id": "msg-1792093519286-yza0",
+        "userId": "attacker-1792093518172",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 0",
+        "timestamp": 1792093519286
+      },
+      {
+        "id": "msg-1792093519287-p4ab",
+        "userId": "attacker-1792093518172",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 1",
+        "timestamp": 1792093519287
+      },
+      {
+        "id": "msg-1792093519287-w9y2",
+        "userId": "attacker-1792093518172",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 2",
+        "timestamp": 1792093519287
+      },
+      {
+        "id": "msg-1792093519287-210y",
+        "userId": "attacker-1792093518172",
+        "userName": "Malicious Guest",
+        "userAvatar": "",
+        "text": "Burst message 3",
+        "timestamp": 1792093519287
+      },
+      {
+        "id": "sys-1792093519788",
+        "userId": "system",
+        "userName": "GreenRoom",
+        "userAvatar": "",
+        "text": "Security Host transferred host privileges to Malicious Guest.",
+        "timestamp": 1792093519788,
+        "isSystem": true
+      }
+    ],
+    "polls": [],
+    "createdAt": 1792093517460,
+    "isPermanent": false
+  }
+]

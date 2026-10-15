@@ -1,0 +1,142 @@
+import { MediaItem } from '../types/watchParty';
+
+export const MOVIE_CATALOG: MediaItem[] = [
+  {
+    id: 'movie-cosmic-laundromat',
+    title: 'Cosmos Laundromat (First Cycle)',
+    year: 2015,
+    duration: 596,
+    genre: ['Sci-Fi', 'Animation', 'Fantasy'],
+    synopsis: 'On a desolate island, a suicidal sheep named Franck meets a mysterious salesman who offers him the gift of a lifetime: a journey across infinite parallel worlds to find meaning.',
+    cast: ['Pierre Bokma', 'Reinout Scholten van Aschat'],
+    director: 'Mathieu Auvray',
+    posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
+    rating: 8.4,
+    sourceType: 'short-film'
+  },
+  {
+    id: 'movie-big-buck-bunny',
+    title: 'Big Buck Bunny: Forest Awakening',
+    year: 2008,
+    duration: 596,
+    genre: ['Animation', 'Comedy', 'Family'],
+    synopsis: 'A large and lovable rabbit deals with bullying woodland creatures who ruin his peaceful morning. With clever traps and forest agility, he turns the tables in a hilarious showdown.',
+    cast: ['Animated Ensembles'],
+    director: 'Sacha Goedegebure',
+    posterUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://media.w3.org/2010/05/bunny/trailer.mp4',
+    rating: 7.9,
+    sourceType: 'short-film'
+  },
+  {
+    id: 'movie-sintel',
+    title: 'Sintel: The Dragon Quest',
+    year: 2010,
+    duration: 888,
+    genre: ['Fantasy', 'Animation', 'Adventure'],
+    synopsis: 'A lonely young warrior named Sintel rescues a wounded baby dragon, nursing it back to health. When an adult dragon swoops down and takes it away, she sets out on an arduous journey across frostbitten lands.',
+    cast: ['Halina Reijn', 'Thom Hoffman'],
+    director: 'Colin Levy',
+    posterUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
+    rating: 8.6,
+    sourceType: 'short-film'
+  },
+  {
+    id: 'movie-tears-of-steel',
+    title: 'Tears of Steel: Neon Vanguard',
+    year: 2012,
+    duration: 734,
+    genre: ['Sci-Fi', 'Action', 'Drama'],
+    synopsis: 'Set in a dystopian future Amsterdam, a squad of resistance soldiers and tech researchers attempt to reset the mind of a colossal AI automaton by recreating a critical memory from the past.',
+    cast: ['Derek de Lint', 'Sergio Hasselbaink', 'Vanja Rukavina'],
+    director: 'Ian Hubert',
+    posterUrl: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_5MB.mp4',
+    rating: 8.1,
+    sourceType: 'short-film'
+  },
+  {
+    id: 'movie-elephants-dream',
+    title: "Elephants Dream: The Machine's Heart",
+    year: 2006,
+    duration: 654,
+    genre: ['Sci-Fi', 'Animation', 'Mystery'],
+    synopsis: 'Two travelers, Proog and Emo, explore the twisting, infinite mechanical corridors of a living super-structure that molds itself around their deepest anxieties.',
+    cast: ['Tygo Gernandt', 'Cas Jansen'],
+    director: 'Bassam Kurdali',
+    posterUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_5MB.mp4',
+    rating: 7.7,
+    sourceType: 'short-film'
+  },
+  {
+    id: 'movie-for-bigger-blazes',
+    title: 'Voyage of the High Sierra',
+    year: 2019,
+    duration: 15,
+    genre: ['Documentary', 'Adventure'],
+    synopsis: 'A breathtaking high-altitude cinematic expedition capturing the untamed peaks, glacial streams, and golden light of the Sierra Nevada range in pristine high resolution.',
+    cast: ['Naturalist Explorers'],
+    director: 'Elena Rostova',
+    posterUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+    rating: 8.8,
+    sourceType: 'documentary'
+  },
+  {
+    id: 'movie-subaru-outback',
+    title: 'The Great Pacific Crossing',
+    year: 2021,
+    duration: 60,
+    genre: ['Documentary', 'Action'],
+    synopsis: 'Deep coastal drives and open wilderness navigation across jagged northern shores, uncovering secret tidepools and marine wildlife sanctuaries.',
+    cast: ['Coastal Field Crew'],
+    director: 'Marcus Thorne',
+    posterUrl: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+    rating: 8.0,
+    sourceType: 'documentary'
+  },
+  {
+    id: 'movie-charade-1963',
+    title: 'Charade (Classic Restoration)',
+    year: 1963,
+    duration: 6780,
+    genre: ['Classics', 'Mystery', 'Comedy', 'Romance'],
+    synopsis: 'A stylish young widow in Paris finds herself pursued by several menacing men who want the fortune her murdered husband stole, aided by a charming stranger whose identity keeps shifting.',
+    cast: ['Cary Grant', 'Audrey Hepburn', 'Walter Matthau', 'James Coburn'],
+    director: 'Stanley Donen',
+    posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+    rating: 8.9,
+    sourceType: 'open-cinema'
+  },
+  {
+    id: 'movie-night-living-dead',
+    title: 'Night of the Living Dead',
+    year: 1968,
+    duration: 5760,
+    genre: ['Classics', 'Horror', 'Drama'],
+    synopsis: 'A disparate group of strangers seek refuge in an isolated rural Pennsylvania farmhouse during an unexplainable resurrection of the dead. A milestone in independent cinema.',
+    cast: ['Duane Jones', 'Judith O\'Dea', 'Karl Hardman'],
+    director: 'George A. Romero',
+    posterUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
+    videoUrl: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4',
+    rating: 8.5,
+    sourceType: 'open-cinema'
+  }
+];
+
+export const GENRE_CATEGORIES = [
+  'All',
+  'Animation',
+  'Sci-Fi',
+  'Documentary',
+  'Classics',
+  'Comedy',
+  'Fantasy',
+  'Action',
+  'Mystery'
+];

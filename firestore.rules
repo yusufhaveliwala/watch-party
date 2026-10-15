@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile collection (private to each user)
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update: if isOwner(userId)
+        && incoming().userId == userId
+        && incoming().displayName is string
+        && incoming().displayName.size() <= 100;
+      allow delete: if isOwner(userId);
+    }
+
+    // Permanent Rooms collection
+    match /rooms/{roomId} {
+      allow get: if isValidId(roomId);
+      allow list: if true;
+      allow create: if isSignedIn()
+        && isValidId(roomId)
+        && incoming().id == roomId
+        && incoming().creatorUid == request.auth.uid
+        && incoming().title is string
+        && incoming().title.size() <= 100
+        && incoming().isPermanent == true;
+      
+      allow update: if isValidId(roomId) && isSignedIn()
+        && (
+          // Creator can update any field
+          existing().creatorUid == request.auth.uid
+          ||
+          // Participants can update playback synchronization or queue
+          incoming().diff(existing()).affectedKeys().hasOnly(['playback', 'playlist', 'updatedAt'])
+        );
+
+      allow delete: if isValidId(roomId) && isSignedIn()
+        && existing().creatorUid == request.auth.uid;
+    }
+  }
+}

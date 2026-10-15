@@ -1,0 +1,408 @@
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { io, Socket } from 'socket.io-client';
+import { WatchRoom, Participant, MediaItem, ChatMessage, EmojiReaction, Poll, PlaylistItem } from '../types/watchParty';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  avatar: string;
+}
+
+interface RoomContextType {
+  user: UserProfile;
+  setUser: (user: UserProfile) => void;
+  updateUserProfile: (name: string, avatar: string) => void;
+  room: WatchRoom | null;
+  connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'reconnecting';
+  latencyMs: number;
+  p95Latency: number;
+  currentDriftMs: number;
+  driftCorrectionsCount: number;
+  activeReactions: EmojiReaction[];
+  errorMessage: string | null;
+  clearError: () => void;
+  joinRoom: (roomId: string) => void;
+  createRoom: (title: string, playbackControl?: 'all' | 'host-only') => Promise<string>;
+  leaveRoom: () => void;
+  sendPlaybackCommand: (
+    action: 'play' | 'pause' | 'seek' | 'change-media' | 'rate',
+    options?: { position?: number; media?: MediaItem; playbackRate?: number }
+  ) => void;
+  sendChatMessage: (text: string) => void;
+  sendReaction: (emoji: string) => void;
+  sendPlaylistAction: (
+    action: 'add' | 'remove' | 'reorder' | 'suggest' | 'approve' | 'reject',
+    data?: { item?: MediaItem; itemId?: string; fromIndex?: number; toIndex?: number }
+  ) => void;
+  sendPollAction: (
+    action: 'create' | 'vote' | 'close' | 'reset',
+    data?: { poll?: { question: string; options: string[] }; pollId?: string; optionId?: string }
+  ) => void;
+  sendHostAction: (
+    action: 'transfer' | 'kick' | 'update-settings',
+    data?: { targetUserId?: string; settings?: { playbackControl?: 'all' | 'host-only'; title?: string } }
+  ) => void;
+  isHost: boolean;
+  canControlPlayback: boolean;
+}
+
+const RoomContext = createContext<RoomContextType | null>(null);
+
+// Generate default user profile
+function getInitialUserProfile(): UserProfile {
+  try {
+    const saved = localStorage.getItem('greenroom_user');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch {
+    // Ignore storage errors
+  }
+  const randomNum = Math.floor(100 + Math.random() * 900);
+  const id = `user-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+  const names = ['Fern', 'Sage', 'Rowan', 'Cedar', 'Willow', 'Jasper', 'Flora', 'Moss', 'Laurel', 'Breeze'];
+  const name = `${names[Math.floor(Math.random() * names.length)]}_${randomNum}`;
+  const avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
+  const profile: UserProfile = { id, name, avatar };
+  try {
+    localStorage.setItem('greenroom_user', JSON.stringify(profile));
+  } catch {
+    // Ignore
+  }
+  return profile;
+}
+
+export const RoomProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUserState] = useState<UserProfile>(getInitialUserProfile);
+  const [room, setRoom] = useState<WatchRoom | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected' | 'reconnecting'>('disconnected');
+  const [latencyMs, setLatencyMs] = useState<number>(0);
+  const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
+  const [p95Latency, setP95Latency] = useState<number>(0);
+  const [currentDriftMs, setCurrentDriftMs] = useState<number>(0);
+  const [driftCorrectionsCount, setDriftCorrectionsCount] = useState<number>(0);
+  const [activeReactions, setActiveReactions] = useState<EmojiReaction[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const socketRef = useRef<Socket | null>(null);
+  const currentRoomIdRef = useRef<string | null>(null);
+
+  const setUser = (newProfile: UserProfile) => {
+    setUserState(newProfile);
+    try {
+      localStorage.setItem('greenroom_user', JSON.stringify(newProfile));
+    } catch {
+      // Ignore
+    }
+  };
+
+  const updateUserProfile = (name: string, avatar: string) => {
+    const updated = { ...user, name, avatar };
+    setUser(updated);
+  };
+
+  const clearError = () => setErrorMessage(null);
+
+  // Initialize socket
+  useEffect(() => {
+    const socket = io({
+      autoConnect: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 10000
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setConnectionStatus('connected');
+      // If we were previously in a room, rejoin it automatically
+      if (currentRoomIdRef.current) {
+        socket.emit('join-room', { roomId: currentRoomIdRef.current, user });
+      }
+    });
+
+    socket.on('connecting', () => setConnectionStatus('connecting'));
+    socket.on('reconnect_attempt', () => setConnectionStatus('reconnecting'));
+    socket.on('disconnect', () => setConnectionStatus('disconnected'));
+
+    socket.on('room-state', (roomData: WatchRoom) => {
+      setRoom(roomData);
+    });
+
+    socket.on('playback-sync', ({ playback, action }: { playback: any; action: string; triggeredBy: string }) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          playback
+        };
+      });
+    });
+
+    socket.on('chat-message', (msg: ChatMessage) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        // Prevent duplicate system messages
+        if (prev.chat.some(c => c.id === msg.id)) return prev;
+        return {
+          ...prev,
+          chat: [...prev.chat, msg]
+        };
+      });
+    });
+
+    socket.on('reaction', (reaction: EmojiReaction) => {
+      setActiveReactions((prev) => [...prev, reaction]);
+      setTimeout(() => {
+        setActiveReactions((prev) => prev.filter(r => r.id !== reaction.id));
+      }, 3200);
+    });
+
+    socket.on('participants-updated', (participants: Participant[]) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          participants
+        };
+      });
+    });
+
+    socket.on('playlist-updated', (playlist: PlaylistItem[]) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          playlist
+        };
+      });
+    });
+
+    socket.on('polls-updated', (polls: Poll[]) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          polls
+        };
+      });
+    });
+
+    socket.on('room-settings-updated', (settings: any) => {
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...settings
+        };
+      });
+    });
+
+    socket.on('error-message', (msg: string) => {
+      setErrorMessage(msg);
+    });
+
+    // Latency Ping interval
+    const pingTimer = setInterval(() => {
+      if (socket.connected) {
+        const start = Date.now();
+        socket.emit('ping-latency', start, () => {
+          const rtt = Date.now() - start;
+          const oneWayLatency = Math.round(rtt / 2);
+          setLatencyMs(oneWayLatency);
+          setLatencyHistory((hist) => {
+            const next = [...hist.slice(-19), oneWayLatency];
+            // Calculate p95 latency
+            const sorted = [...next].sort((a, b) => a - b);
+            const p95Idx = Math.floor(sorted.length * 0.95);
+            setP95Latency(sorted[p95Idx] || sorted[sorted.length - 1] || oneWayLatency);
+            return next;
+          });
+        });
+      }
+    }, 4000);
+
+    return () => {
+      clearInterval(pingTimer);
+      socket.disconnect();
+    };
+  }, []);
+
+  // Join Room
+  const joinRoom = useCallback((roomId: string) => {
+    if (!socketRef.current) return;
+    const cleanId = roomId.trim().toUpperCase();
+    currentRoomIdRef.current = cleanId;
+    socketRef.current.emit('join-room', { roomId: cleanId, user });
+  }, [user]);
+
+  // Create Room
+  const createRoom = useCallback(async (title: string, playbackControl: 'all' | 'host-only' = 'all'): Promise<string> => {
+    try {
+      const res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          hostName: user.name,
+          hostAvatar: user.avatar,
+          playbackControl
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create room');
+      }
+      joinRoom(data.room.id);
+      return data.room.id;
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error creating watch room');
+      throw err;
+    }
+  }, [user, joinRoom]);
+
+  // Leave Room
+  const leaveRoom = useCallback(() => {
+    if (socketRef.current && currentRoomIdRef.current) {
+      currentRoomIdRef.current = null;
+      setRoom(null);
+    }
+  }, []);
+
+  // Playback Command
+  const sendPlaybackCommand = useCallback((
+    action: 'play' | 'pause' | 'seek' | 'change-media' | 'rate',
+    options?: { position?: number; media?: MediaItem; playbackRate?: number }
+  ) => {
+    if (!socketRef.current || !room) return;
+    socketRef.current.emit('playback-command', {
+      roomId: room.id,
+      action,
+      position: options?.position,
+      media: options?.media,
+      playbackRate: options?.playbackRate,
+      userId: user.id,
+      userName: user.name
+    });
+  }, [room, user]);
+
+  // Chat message
+  const sendChatMessage = useCallback((text: string) => {
+    if (!socketRef.current || !room || !text.trim()) return;
+    socketRef.current.emit('chat-message', {
+      roomId: room.id,
+      message: {
+        userId: user.id,
+        userName: user.name,
+        userAvatar: user.avatar,
+        text: text.trim()
+      }
+    });
+  }, [room, user]);
+
+  // Reaction
+  const sendReaction = useCallback((emoji: string) => {
+    if (!socketRef.current || !room) return;
+    socketRef.current.emit('reaction', {
+      roomId: room.id,
+      emoji,
+      userId: user.id,
+      userName: user.name
+    });
+  }, [room, user]);
+
+  // Playlist actions
+  const sendPlaylistAction = useCallback((
+    action: 'add' | 'remove' | 'reorder' | 'suggest' | 'approve' | 'reject',
+    data?: { item?: MediaItem; itemId?: string; fromIndex?: number; toIndex?: number }
+  ) => {
+    if (!socketRef.current || !room) return;
+    socketRef.current.emit('playlist-action', {
+      roomId: room.id,
+      action,
+      item: data?.item,
+      itemId: data?.itemId,
+      fromIndex: data?.fromIndex,
+      toIndex: data?.toIndex,
+      userId: user.id,
+      userName: user.name
+    });
+  }, [room, user]);
+
+  // Poll actions
+  const sendPollAction = useCallback((
+    action: 'create' | 'vote' | 'close' | 'reset',
+    data?: { poll?: { question: string; options: string[] }; pollId?: string; optionId?: string }
+  ) => {
+    if (!socketRef.current || !room) return;
+    socketRef.current.emit('poll-action', {
+      roomId: room.id,
+      action,
+      poll: data?.poll,
+      pollId: data?.pollId,
+      optionId: data?.optionId,
+      userId: user.id,
+      userName: user.name
+    });
+  }, [room, user]);
+
+  // Host actions
+  const sendHostAction = useCallback((
+    action: 'transfer' | 'kick' | 'update-settings',
+    data?: { targetUserId?: string; settings?: { playbackControl?: 'all' | 'host-only'; title?: string } }
+  ) => {
+    if (!socketRef.current || !room) return;
+    socketRef.current.emit('host-action', {
+      roomId: room.id,
+      action,
+      targetUserId: data?.targetUserId,
+      settings: data?.settings,
+      userId: user.id,
+      userName: user.name
+    });
+  }, [room, user]);
+
+  const isHost = Boolean(room && room.hostId === user.id);
+  const canControlPlayback = Boolean(room && (room.playbackControl === 'all' || isHost));
+
+  return (
+    <RoomContext.Provider
+      value={{
+        user,
+        setUser,
+        updateUserProfile,
+        room,
+        connectionStatus,
+        latencyMs,
+        p95Latency,
+        currentDriftMs,
+        driftCorrectionsCount,
+        activeReactions,
+        errorMessage,
+        clearError,
+        joinRoom,
+        createRoom,
+        leaveRoom,
+        sendPlaybackCommand,
+        sendChatMessage,
+        sendReaction,
+        sendPlaylistAction,
+        sendPollAction,
+        sendHostAction,
+        isHost,
+        canControlPlayback
+      }}
+    >
+      {children}
+    </RoomContext.Provider>
+  );
+};
+
+export function useRoom(): RoomContextType {
+  const ctx = useContext(RoomContext);
+  if (!ctx) {
+    throw new Error('useRoom must be used within a RoomProvider');
+  }
+  return ctx;
+}
